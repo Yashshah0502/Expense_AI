@@ -20,7 +20,7 @@ def keyword_search(cur, q: str, top_k: int):
     """
     cur.execute(
         """
-        SELECT doc_name, chunk_index, LEFT(content, 400) AS snippet,
+        SELECT doc_name, chunk_index, content, LEFT(content, 400) AS snippet,
                ts_rank(content_tsv, plainto_tsquery('english', %s)) AS score
         FROM policy_chunks
         WHERE content_tsv @@ plainto_tsquery('english', %s)
@@ -45,7 +45,7 @@ def vector_search(cur, q_vec: list[float], top_k: int):
     """
     cur.execute(
         """
-        SELECT doc_name, chunk_index, LEFT(content, 400) AS snippet,
+        SELECT doc_name, chunk_index, content, LEFT(content, 400) AS snippet,
                (embedding <=> %s::vector) AS distance
         FROM policy_chunks
         WHERE embedding IS NOT NULL
@@ -90,11 +90,12 @@ def hybrid_search(q: str, top_k: int = 5):
     merged = {}
 
     # Keyword results
-    for doc_name, chunk_index, snippet, score in keyword_rows:
+    for doc_name, chunk_index, content, snippet, score in keyword_rows:
         key = (doc_name, chunk_index)
         merged[key] = {
             "doc_name": doc_name,
             "chunk_index": chunk_index,
+            "content": content,
             "snippet": snippet,
             "keyword_score": float(score),
             "vector_distance": None,
@@ -102,12 +103,13 @@ def hybrid_search(q: str, top_k: int = 5):
         }
 
     # Vector results
-    for doc_name, chunk_index, snippet, dist in vector_rows:
+    for doc_name, chunk_index, content, snippet, dist in vector_rows:
         key = (doc_name, chunk_index)
         if key not in merged:
             merged[key] = {
                 "doc_name": doc_name,
                 "chunk_index": chunk_index,
+                "content": content,
                 "snippet": snippet,
                 "keyword_score": None,
                 "vector_distance": float(dist),

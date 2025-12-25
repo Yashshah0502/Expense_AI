@@ -1,3 +1,4 @@
+# It takes PDF policy files → breaks them into small chunks → creates embeddings for each chunk → stores them in Postgres (policy_chunks) so /policy/search can retrieve them later.
 import os
 import sys
 from pathlib import Path
@@ -25,7 +26,7 @@ def main():
         return
 
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1200,
+        chunk_size=1024,
         chunk_overlap=200,
     )
 
@@ -42,19 +43,30 @@ def main():
                 docs = loader.load()
                 chunks = splitter.split_documents(docs)
 
-                texts = [c.page_content for c in chunks]
-                if not texts:
+                texts_for_embedding = []
+                final_chunks = []
+
+                for i, c in enumerate(chunks):
+                    page_num = c.metadata.get("page", 0) + 1
+                    # Prepend metadata to content for better retrieval context
+                    enriched_content = f"Document: {doc_name} | Page: {page_num}\n\n{c.page_content}"
+                    texts_for_embedding.append(enriched_content)
+                    final_chunks.append((i, enriched_content, page_num))
+
+                if not texts_for_embedding:
                     continue
                     
-                embeddings = get_embeddings(texts)
+                embeddings = get_embeddings(texts_for_embedding)
 
-                for i, (text, emb) in enumerate(zip(texts, embeddings)):
+                for (idx, content, page), emb in zip(final_chunks, embeddings):
+                    # We store "Page X" as the section title for now since we don't have real section headers
+                    section_title = f"Page {page}"
                     cur.execute(
                         """
                         INSERT INTO policy_chunks (doc_name, section, chunk_index, content, embedding)
                         VALUES (%s, %s, %s, %s, %s)
                         """,
-                        (doc_name, None, i, text, emb),
+                        (doc_name, section_title, idx, content, emb),
                     )
 
             conn.commit()

@@ -33,15 +33,14 @@ def rerank_documents(query: str, documents: list[dict], top_k: int) -> list[dict
     reranker = get_reranker_model()
     
     # Prepare pairs for the cross-encoder: [[query, text], [query, text], ...]
-    # We use 'snippet' which comes from the SQL query (LEFT(content, 400)). 
-    # Ideally for reranking we might want more context, but let's stick to what we retrieved.
-    # If possible, we should maybe retrieve full content for candidates if snippet is too short,
-    # but snippet=400 chars might be enough for a strong signal. 
-    # Actually, the user's SEARCH query returns `snippet`. 
-    # Let's check `policy_search.py`: "LEFT(content, 400) AS snippet".
-    # Cross-encoder works best with more context, but 400 chars is okay.
-    
-    pairs = [[query, doc["snippet"]] for doc in documents]
+    # We prefer 'content' (full text) if available, capped at 2000 chars for performance.
+    # Fallback to 'snippet' if 'content' is missing.
+    pairs = []
+    for doc in documents:
+        text_source = doc.get("content") or doc.get("snippet") or ""
+        # Cap at 1024 chars as recommended for BAAI/bge-reranker-v2-m3
+        text = text_source[:1024]
+        pairs.append([query, text])
     
     # Compute scores
     scores = reranker.compute_score(pairs)

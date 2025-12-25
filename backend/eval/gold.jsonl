@@ -1,4 +1,5 @@
-{"query": "Is a receipt required for all expenses?", "relevant_docs": ["ASU.pdf_31", "ASU.pdf_25"]}
-{"query": "What is the daily meal limit?", "relevant_docs": ["ASU.pdf_25"]}
-{"query": "Can I upgrade my flight to business class?", "relevant_docs": ["ASU.pdf_17"]}
-{"query": "Who approves the expense reports?", "relevant_docs": ["ASU.pdf_7"]}
+{"query": "Is a receipt required for all expenses?", "relevant_docs": ["ASU.pdf_34", "ASU.pdf_30"]}
+{"query": "What is the daily meal limit?", "relevant_docs": ["ASU.pdf_31"]}
+{"query": "Can I upgrade my flight to business class?", "relevant_docs": ["ASU.pdf_20"]}
+{"query": "Who approves the expense reports?", "relevant_docs": ["ASU.pdf_8", "ASU.pdf_9"]}
+{"query": "Can I be reimbursed for mileage on my personal vehicle?", "relevant_docs": ["ASU.pdf_25"]}
