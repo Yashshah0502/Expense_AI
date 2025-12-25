@@ -1,8 +1,20 @@
-{"query": "Is a receipt required for all expenses?", "relevant_docs": ["ASU.pdf_34", "ASU.pdf_30", "Columbia.pdf_21", "Columbia.pdf_22"]}
-{"query": "What is the daily meal limit?", "relevant_docs": ["ASU.pdf_31"]}
-{"query": "Can I upgrade my flight to business class?", "relevant_docs": ["ASU.pdf_20", "Columbia.pdf_31", "Michigan.pdf_19"]}
-{"query": "Who approves the expense reports?", "relevant_docs": ["ASU.pdf_8", "ASU.pdf_9", "Michigan.pdf_6", "Columbia.pdf_14"]}
-{"query": "Can I be reimbursed for mileage on my personal vehicle?", "relevant_docs": ["ASU.pdf_25", "Columbia.pdf_39", "Michigan.pdf_22"]}
+{"query": "Is a receipt required for all expenses?", "relevant_docs": ["ASU.pdf_34", "ASU.pdf_30", "Columbia.pdf_21", "Columbia.pdf_22", "Yale.pdf_55", "Michigan.pdf_9"]}
+{"query": "What is the minimum amount that requires a receipt?", "relevant_docs": ["Yale.pdf_55", "Yale.pdf_57"]}
+{"query": "Can I upgrade my flight to business class?", "relevant_docs": ["ASU.pdf_20", "Columbia.pdf_31", "Michigan.pdf_19", "Yale.pdf_17", "rutgures.pdf_20"]}
+{"query": "Who approves the expense reports?", "relevant_docs": ["ASU.pdf_8", "ASU.pdf_9", "Michigan.pdf_6", "Columbia.pdf_14", "rutgures.pdf_4", "rutgures.pdf_46"]}
+{"query": "Can I be reimbursed for mileage on my personal vehicle?", "relevant_docs": ["ASU.pdf_25", "Columbia.pdf_39", "Michigan.pdf_22", "Yale.pdf_21"]}
 {"query": "Can I book business class on Acela Express?", "relevant_docs": ["Columbia.pdf_34"]}
-{"query": "What is the deadline for submitting expense reports?", "relevant_docs": ["ASU.pdf_33", "ASU.pdf_38", "Columbia.pdf_17"]}
-{"query": "What details are required on a receipt?", "relevant_docs": ["Michigan.pdf_9"]}
+{"query": "What is the deadline for submitting expense reports?", "relevant_docs": ["ASU.pdf_33", "ASU.pdf_38", "Columbia.pdf_17", "Yale.pdf_53", "rutgures.pdf_41", "Princeton.pdf_5"]}
+{"query": "What details are required on a receipt?", "relevant_docs": ["Michigan.pdf_9", "Columbia.pdf_52", "rutgures.pdf_7"]}
+{"query": "What is the lodging reimbursement limit?", "relevant_docs": ["ASU.pdf_26", "Michigan.pdf_26", "Columbia.pdf_46", "Yale.pdf_36"]}
+{"query": "Can my spouse travel expenses be reimbursed?", "relevant_docs": ["Columbia.pdf_64", "Columbia.pdf_16", "Yale.pdf_10", "Michigan.pdf_30"]}
+{"query": "What is the per diem rate for meals?", "relevant_docs": ["Columbia.pdf_62", "Columbia.pdf_63", "Michigan.pdf_26", "rutgures.pdf_33", "Yale.pdf_40"]}
+{"query": "What are the meal expense limits?", "relevant_docs": ["Columbia.pdf_58", "ASU.pdf_31", "NYU.pdf_5"]}
+{"query": "Do I need approval for international travel?", "relevant_docs": ["ASU.pdf_15", "ASU.pdf_16", "NYU.pdf_10"]}
+{"query": "What is the policy for rental cars?", "relevant_docs": ["ASU.pdf_23", "rutgures.pdf_29", "Yale.pdf_23", "Columbia.pdf_36"]}
+{"query": "Can I take a taxi to the airport?", "relevant_docs": ["ASU.pdf_36", "Columbia.pdf_35", "Michigan.pdf_25", "NYU.pdf_12"]}
+{"query": "What expenses are not reimbursable?", "relevant_docs": ["ASU.pdf_35", "Columbia.pdf_81", "Yale.pdf_48", "Columbia.pdf_79", "Columbia.pdf_80"]}
+{"query": "What documentation is required for hotel stays?", "relevant_docs": ["Columbia.pdf_46", "ASU.pdf_28", "Columbia.pdf_42"]}
+{"query": "How do I submit an expense report?", "relevant_docs": ["ASU.pdf_38", "Yale.pdf_53", "Michigan.pdf_14", "rutgures.pdf_41", "Princeton.pdf_5"]}
+{"query": "What is the policy for conference registration fees?", "relevant_docs": ["ASU.pdf_27", "ASU.pdf_31", "Yale.pdf_41", "Columbia.pdf_48"]}
+{"query": "Are tips and gratuities reimbursable?", "relevant_docs": ["Columbia.pdf_58", "Yale.pdf_47"]}
