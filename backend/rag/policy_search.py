@@ -1,6 +1,10 @@
 import os
 import psycopg
 from .embeddings import get_embedding
+from .rerank import rerank_documents
+
+# Internal constants for retrieval params
+CANDIDATE_K = 30
 
 def keyword_search(cur, q: str, top_k: int):
     """
@@ -54,19 +58,15 @@ def vector_search(cur, q_vec: list[float], top_k: int):
 
 def hybrid_search(q: str, top_k: int = 5):
     """
-    Combines keyword search and vector search to return the best matches.
+    Combines keyword, vector search, and reranking to return the best matches.
     
     Args:
         q: Query string
-        top_k: Number of results to return
+        top_k: Number of final results to return (FINAL_K)
         
     Returns:
         Dictionary containing the query and ranked results
     """
-    # Use environment variable for DB connection, assuming it's loaded in main or here
-    # It's better to load it here in case this is called independently, 
-    # but usually load_dotenv() is called at app startup. 
-    # For safety, we can get it from os.environ
     db_url = os.environ.get("DATABASE_URL")
     if not db_url:
         raise ValueError("DATABASE_URL is not set")
@@ -77,18 +77,19 @@ def hybrid_search(q: str, top_k: int = 5):
     keyword_rows = []
     vector_rows = []
 
+    # 2) Retrieve Candidates (Retrieve Stage)
+    # We fetch CANDIDATE_K items from each source
+    retrieve_k = CANDIDATE_K
+
     with psycopg.connect(db_url) as conn:
         with conn.cursor() as cur:
-            # 2) Keyword search
-            keyword_rows = keyword_search(cur, q, top_k)
-            
-            # 3) Vector search
-            vector_rows = vector_search(cur, q_vec, top_k)
+            keyword_rows = keyword_search(cur, q, retrieve_k)
+            vector_rows = vector_search(cur, q_vec, retrieve_k)
 
-    # 4) Merge + dedupe
+    # 3) Merge + Dedupe
     merged = {}
 
-    # Keyword scores: higher is better
+    # Keyword results
     for doc_name, chunk_index, snippet, score in keyword_rows:
         key = (doc_name, chunk_index)
         merged[key] = {
@@ -97,9 +98,10 @@ def hybrid_search(q: str, top_k: int = 5):
             "snippet": snippet,
             "keyword_score": float(score),
             "vector_distance": None,
+            "source": "keyword"
         }
 
-    # Vector distances: lower is better
+    # Vector results
     for doc_name, chunk_index, snippet, dist in vector_rows:
         key = (doc_name, chunk_index)
         if key not in merged:
@@ -109,39 +111,19 @@ def hybrid_search(q: str, top_k: int = 5):
                 "snippet": snippet,
                 "keyword_score": None,
                 "vector_distance": float(dist),
+                "source": "vector"
             }
         else:
             merged[key]["vector_distance"] = float(dist)
+            merged[key]["source"] = "both"
 
-    # 5) Rank: prefer items in both, then use a combined score or heuristic
-    # This ranking logic perfectly matches the original request
-    def rank(item):
-        both = (item["keyword_score"] is not None) and (item["vector_distance"] is not None)
-        # Lower distance is better; use big default if missing
-        dist = item["vector_distance"] if item["vector_distance"] is not None else 999.0
-        # Higher keyword score is better; use 0 default if missing
-        kw = item["keyword_score"] if item["keyword_score"] is not None else 0.0
-        # Tuple sort: (is_in_both desc, distance asc, kw_score desc)
-        # Python sorts tuples element-by-element.
-        # We want `both`=True first (1 vs 0).
-        # We want lower distance first. To sort desc, we negate dist?
-        # Wait, the original code used `key=rank, reverse=True`.
-        # So we want HIGHER values to be better.
-        # Both=True (1) > Both=False (0). Correct.
-        # Distance: We want LOWER distance. So -dist is HIGHER (better). Correct.
-        # Keyword: We want HIGHER keyword score. Correct.
-        return (1 if both else 0, -dist, kw)
+    candidates = list(merged.values())
+    
+    # Optional logic: if you wanted to pre-sort candidates before reranking to trim list, 
+    # you could do it here, but we usually just rerank all unique candidates found.
+    
+    # 4) Rerank (Rerank Stage)
+    # This assigns a "rerank_score" to each candidate and sorts them.
+    ranked_results = rerank_documents(q, candidates, top_k=top_k)
 
-    results = list(merged.values())
-    results.sort(key=rank, reverse=True)
-
-    # Add source label
-    for r in results:
-        if r["keyword_score"] is not None and r["vector_distance"] is not None:
-            r["source"] = "both"
-        elif r["keyword_score"] is not None:
-            r["source"] = "keyword"
-        else:
-            r["source"] = "vector"
-
-    return {"query": q, "results": results[:top_k]}
+    return {"query": q, "results": ranked_results}
