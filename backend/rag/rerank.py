@@ -1,5 +1,7 @@
 from FlagEmbedding import FlagReranker
 
+RERANK_MAX_LENGTH = 1024
+
 # Global singleton for the reranker model
 _reranker_model = None
 
@@ -33,17 +35,15 @@ def rerank_documents(query: str, documents: list[dict], top_k: int) -> list[dict
     reranker = get_reranker_model()
     
     # Prepare pairs for the cross-encoder: [[query, text], [query, text], ...]
-    # We prefer 'content' (full text) if available, capped at 2000 chars for performance.
-    # Fallback to 'snippet' if 'content' is missing.
+    # We prefer 'content' (full text) if available.
+    # We rely on the model's tokenizer to handle truncation via max_length.
     pairs = []
     for doc in documents:
         text_source = doc.get("content") or doc.get("snippet") or ""
-        # Cap at 1024 chars as recommended for BAAI/bge-reranker-v2-m3
-        text = text_source[:1024]
-        pairs.append([query, text])
+        pairs.append([query, text_source])
     
     # Compute scores
-    scores = reranker.compute_score(pairs)
+    scores = reranker.compute_score(pairs, max_length=RERANK_MAX_LENGTH)
     
     # If only one document, scores might be a float? No, usually list.
     if isinstance(scores, float):

@@ -9,9 +9,22 @@ CREATE TABLE IF NOT EXISTS policy_chunks (
   chunk_index   INT NOT NULL,
   content       TEXT NOT NULL,
   content_tsv   tsvector GENERATED ALWAYS AS (to_tsvector('english', content)) STORED,
+  content_hash  TEXT,
   embedding     vector(1024),
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+  metadata      JSONB,
+  page          INT,
+  org           TEXT,
+  policy_type   TEXT,
+  section_title TEXT,
+  created_at    TIMESTAMPTZ DEFAULT NOW(),
+  
+  -- Ensure unique citation (doc + index)
+  CONSTRAINT policy_chunks_docname_chunkindex_uniq UNIQUE (doc_name, chunk_index)
 );
+
+CREATE INDEX IF NOT EXISTS idx_policy_chunks_org ON policy_chunks(org);
+CREATE INDEX IF NOT EXISTS idx_policy_chunks_policy_type ON policy_chunks(policy_type);
+CREATE INDEX IF NOT EXISTS idx_policy_chunks_doc_page ON policy_chunks(doc_name, page);
 
 -- 2) Expenses (your reimbursement rows from XLSX)
 CREATE TABLE IF NOT EXISTS expenses (

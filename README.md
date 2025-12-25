@@ -4,10 +4,11 @@ A Hybrid Search  SQL + RAG-powered (Retrieval-Augmented Generation) assistant fo
 
 ## Features
 
-- **Hybrid Search**: Combines PostgreSQL full-text search and `pgvector` similarity search for accurate policy retrieval.
-- **RAG Pipeline**: PDF ingestion, chunking, and embedding using `BAAI/bge-m3` (1024 dimensions).
+- **Two-Stage Retrieval**: Implements a "Retrieve-then-Rerank" pipeline. Candidates are first fetched via hybrid search (keyword + vector) and then re-scored using a Cross-Encoder reranker (`BAAI/bge-reranker-v2-m3`).
+- **Robust Chunking**: Uses `RecursiveCharacterTextSplitter` with metadata enrichment (Doc Name, Page Number) for high-precision retrieval.
+- **Offline Evaluation**: Quantitative metrics (**Recall@K**, **MRR**) to measure search performance against a "gold set" of ground-truth questions.
 - **FastAPI Backend**: Modular and scalable API service.
-- **Dockerized Database**: PostgreSQL with `pgvector` extension enabled.
+- **Dockerized Database**: PostgreSQL with `pgvector` and HNSW indexing.
 
 ## Project Structure
 
@@ -16,10 +17,14 @@ Expense_AI/
 ├── backend/
 │   ├── main.py                 # FastAPI application and matching logic
 │   ├── rag/                    # RAG logic package
-│   │   ├── embeddings.py       # Embedding model management
-│   │   └── policy_search.py    # Keyword, Vector, and Hybrid search implementation
+│   │   ├── embeddings.py       # Embedding model (BGE-M3) management
+│   │   ├── rerank.py           # Cross-Encoder (BGE-Reranker-v2-m3) logic
+│   │   └── policy_search.py    # Hybrid search + Reranking pipeline
+│   ├── eval/                   # Evaluation Suite
+│   │   ├── gold.jsonl          # Ground-truth queries and relevant chunks
+│   │   └── run_eval.py         # Metrics (Recall@K / MRR) calculator
 │   ├── scripts/
-│   │   └── ingest_policies.py  # Script to ingest PDFs into the DB
+│   │   └── ingest_policies.py  # Script for chunking and ingestion
 │   └── requirements.txt        # Python dependencies
 ├── data/
 │   └── RAG_Data/               # Directory for policy PDFs
@@ -68,7 +73,16 @@ Place your PDF policies in `data/RAG_Data/_staging/`. Then run the ingestion scr
 # From backend/ directory with venv activated
 python scripts/ingest_policies.py
 ```
-This will parse the PDFs, chunk text, generate embeddings, and store them in the database.
+This script uses a `RecursiveCharacterTextSplitter` (1024 chars, 200 overlap) and prepends metadata to each chunk for better reranking context.
+
+### Running Evaluation
+To verify search quality (Recall and MRR):
+
+```bash
+# From backend/ directory
+python eval/run_eval.py
+```
+*Note: The first run downloads the ~2.2GB reranker model.*
 
 ### Running the API
 Start the FastAPI server:
@@ -85,13 +99,14 @@ The API will be available at `http://localhost:8000`.
   - `GET /health`: API status.
   - `GET /db-health`: Database connectivity status.
 
-- **Policy Search**:
+- **Policy Search (Retrieve + Rerank)**:
   - `GET /policy/search?q=query_text&top_k=5`
-  - Returns a ranked list of policy chunks matching the query using hybrid search.
+  - Fetches 30 candidates and returns top 5 reranked results with `rerank_score`.
 
 ## Technology Stack
 - **Language**: Python 3.11
 - **Framework**: FastAPI
 - **Database**: PostgreSQL + pgvector
-- **Embeddings**: BAAI/bge-m3 (via sentence-transformers)
+- **Embeddings**: BAAI/bge-m3
+- **Reranker**: BAAI/bge-reranker-v2-m3
 - **Orchestration**: Docker Compose
