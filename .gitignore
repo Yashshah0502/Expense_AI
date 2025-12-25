@@ -33,4 +33,7 @@ desktop.ini
 
 # Logs and databases
 *.log
-*.sqlite
+
+# Python
+__pycache__/
+*.pyc

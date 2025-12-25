@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+python-dotenv
+psycopg[binary]
+langchain-community
+langchain-text-splitters
+sentence-transformers
