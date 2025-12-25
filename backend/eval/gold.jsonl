@@ -1,5 +1,8 @@
-{"query": "Is a receipt required for all expenses?", "relevant_docs": ["ASU.pdf_34", "ASU.pdf_30"]}
+{"query": "Is a receipt required for all expenses?", "relevant_docs": ["ASU.pdf_34", "ASU.pdf_30", "Columbia.pdf_21", "Columbia.pdf_22"]}
 {"query": "What is the daily meal limit?", "relevant_docs": ["ASU.pdf_31"]}
-{"query": "Can I upgrade my flight to business class?", "relevant_docs": ["ASU.pdf_20"]}
-{"query": "Who approves the expense reports?", "relevant_docs": ["ASU.pdf_8", "ASU.pdf_9"]}
-{"query": "Can I be reimbursed for mileage on my personal vehicle?", "relevant_docs": ["ASU.pdf_25"]}
+{"query": "Can I upgrade my flight to business class?", "relevant_docs": ["ASU.pdf_20", "Columbia.pdf_31", "Michigan.pdf_19"]}
+{"query": "Who approves the expense reports?", "relevant_docs": ["ASU.pdf_8", "ASU.pdf_9", "Michigan.pdf_6", "Columbia.pdf_14"]}
+{"query": "Can I be reimbursed for mileage on my personal vehicle?", "relevant_docs": ["ASU.pdf_25", "Columbia.pdf_39", "Michigan.pdf_22"]}
+{"query": "Can I book business class on Acela Express?", "relevant_docs": ["Columbia.pdf_34"]}
+{"query": "What is the deadline for submitting expense reports?", "relevant_docs": ["ASU.pdf_33", "ASU.pdf_38", "Columbia.pdf_17"]}
+{"query": "What details are required on a receipt?", "relevant_docs": ["Michigan.pdf_9"]}
