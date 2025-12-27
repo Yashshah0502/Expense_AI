@@ -11,16 +11,18 @@ def generate_answer(
     filters: dict = None,
     candidate_k: int = 30,
     final_k: int = 5,
+    group_by_org: bool = False,
 ):
     """
     Generate an answer to a policy question using retrieval + LLM.
-    
+
     Args:
         query: User's question
         filters: Optional dict with org, policy_type, doc_name filters
         candidate_k: Number of candidates to retrieve
         final_k: Number of top results to use for generation
-        
+        group_by_org: If True, instruct the model to group answers by organization
+
     Returns:
         Dictionary with answer, sources, and metadata
     """
@@ -74,10 +76,22 @@ def generate_answer(
         })
     
     sources_text = "\n\n".join(citation_blocks)
-    
-    # 3) Build prompt
-    prompt = f"""You are a policy assistant answering travel/procurement questions. 
-Use only the following policy citations to answer. If unsure, say so.
+
+    # 3) Build prompt with optional grouping instruction
+    if group_by_org:
+        system_instruction = """You are a policy assistant answering travel/procurement questions across multiple universities.
+
+IMPORTANT: If policies differ by university, organize your answer by university (org). Show each organization separately with its specific policy and citations.
+
+If all universities have the same policy, you can provide a single unified answer with citations from all sources.
+
+Use only the following policy citations to answer. If unsure, say so."""
+    else:
+        system_instruction = """You are a policy assistant answering travel/procurement questions.
+
+Use only the following policy citations to answer. If unsure, say so."""
+
+    prompt = f"""{system_instruction}
 
 Sources:
 {sources_text}

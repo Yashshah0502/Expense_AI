@@ -6,6 +6,8 @@ import os
 
 from rag.policy_search import hybrid_search
 from rag.answer_gen import generate_answer
+from app.policy.router_v1 import route_question
+from app.schemas.router import AnswerResponse, Route
 
 load_dotenv()
 app = FastAPI()
@@ -62,7 +64,7 @@ def policy_search(
     except Exception as e:
         return {"status": "error", "detail": str(e)}
 
-@app.post("/policy/answer")
+@app.post("/policy/answer", response_model=AnswerResponse)
 def policy_answer(
     q: str = Query(..., min_length=2, description="Question to answer"),
     org: Optional[str] = Query(None, description="Filter by org/university"),
@@ -72,23 +74,67 @@ def policy_answer(
     final_k: int = Query(5, description="Number of sources to use for answer"),
 ):
     """
-    Answer a policy question using retrieval + LLM generation.
-    Returns an answer with citations.
+    Answer a policy question using retrieval + LLM generation with intelligent routing.
+    Returns a structured answer with citations and routing information.
     """
-    try:
-        filters = {}
-        if org:
-            filters["org"] = org.upper()
-        if policy_type:
-            filters["policy_type"] = policy_type.lower()
-        if doc_name:
-            filters["doc_name"] = doc_name
-            
-        return generate_answer(
+    # Route the question to determine the appropriate handling
+    decision = route_question(q, org=org, policy_type=policy_type, doc_name=doc_name)
+
+    # Handle SQL intent (not yet implemented)
+    if decision.route == Route.SQL_NOT_READY:
+        return AnswerResponse(
+            status="needs_sql",
             query=q,
-            filters=filters,
-            candidate_k=candidate_k,
-            final_k=final_k,
+            route=decision.route,
+            filters=decision.filters,
+            warning="This question needs expense/fact data (SQL). Policy docs alone may not answer it yet.",
         )
-    except Exception as e:
-        return {"status": "error", "detail": str(e)}
+
+    # Handle clarification requests
+    if decision.route == Route.CLARIFY:
+        return AnswerResponse(
+            status="needs_clarification",
+            query=q,
+            route=decision.route,
+            filters=decision.filters,
+            clarify_question=decision.clarify_question,
+        )
+
+    # RAG routes (RAG_FILTERED or RAG_ALL) -> call existing answer pipeline
+    # Convert PolicyFilters to dict for generate_answer
+    filters_dict = {}
+    if decision.filters.org:
+        filters_dict["org"] = decision.filters.org.upper()
+    if decision.filters.policy_type:
+        filters_dict["policy_type"] = decision.filters.policy_type.lower()
+    if decision.filters.doc_name:
+        filters_dict["doc_name"] = decision.filters.doc_name
+
+    result = generate_answer(
+        query=q,
+        filters=filters_dict,
+        candidate_k=candidate_k,
+        final_k=final_k,
+        group_by_org=(decision.route == Route.RAG_ALL),
+    )
+
+    # Handle no results case
+    if not result.get("sources"):
+        return AnswerResponse(
+            status="no_results",
+            query=q,
+            route=decision.route,
+            filters=decision.filters,
+            warning="No relevant policy chunks found. Try specifying a university or different keywords.",
+        )
+
+    # Return successful result
+    return AnswerResponse(
+        status="ok",
+        query=q,
+        route=decision.route,
+        filters=decision.filters,
+        answer=result.get("answer", ""),
+        sources=result.get("sources", []),
+        warning=result.get("warning"),
+    )
