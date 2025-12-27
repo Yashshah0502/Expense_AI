@@ -1,6 +1,6 @@
 from enum import Enum
-from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field
+from typing import Optional, List
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class Route(str, Enum):
@@ -23,14 +23,62 @@ class RouterDecision(BaseModel):
     reason: str = ""
 
 
+class Source(BaseModel):
+    """Schema for a policy document source/citation"""
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "doc_name": "stanford_travel_policy.pdf",
+                "org": "Stanford",
+                "page": 5,
+                "text_snippet": "Business class is allowed for international flights exceeding 8 hours...",
+                "score": 0.95
+            }
+        }
+    )
+
+    doc_name: str = Field(..., description="PDF filename")
+    org: str = Field(..., description="University/organization name")
+    page: int | str = Field(..., description="Page number in the document")
+    text_snippet: str = Field(..., description="Relevant text excerpt from the document")
+    score: Optional[float] = Field(None, description="Relevance/rerank score (0-1)")
+
+
 class AnswerResponse(BaseModel):
-    status: str  # "ok" | "needs_clarification" | "needs_sql" | "no_results"
-    query: str
-    route: Route
-    filters: PolicyFilters
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "status": "ok",
+                "query": "For Stanford, is business class allowed?",
+                "route": "RAG_FILTERED",
+                "filters": {
+                    "org": "Stanford",
+                    "policy_type": None,
+                    "doc_name": None
+                },
+                "answer": "Yes, Stanford allows business class for international flights exceeding 8 hours. [Stanford] stanford_travel_policy.pdf Pg 5",
+                "sources": [
+                    {
+                        "doc_name": "stanford_travel_policy.pdf",
+                        "org": "Stanford",
+                        "page": 5,
+                        "text_snippet": "Business class is allowed for international flights exceeding 8 hours...",
+                        "score": 0.95
+                    }
+                ],
+                "clarify_question": None,
+                "warning": None
+            }
+        }
+    )
 
-    answer: Optional[str] = None
-    sources: List[Dict[str, Any]] = Field(default_factory=list)  # keep flexible for your existing shape
+    status: str = Field(..., description="Response status: ok | needs_clarification | needs_sql | no_results")
+    query: str = Field(..., description="The original user question")
+    route: Route = Field(..., description="The routing decision made by the router")
+    filters: PolicyFilters = Field(..., description="Filters applied for this query")
 
-    clarify_question: Optional[str] = None
-    warning: Optional[str] = None
+    answer: Optional[str] = Field(None, description="LLM-generated answer with citations")
+    sources: List[Source] = Field(default_factory=list, description="Source documents used to generate the answer")
+
+    clarify_question: Optional[str] = Field(None, description="Follow-up question if clarification is needed")
+    warning: Optional[str] = Field(None, description="Warning or error message if applicable")

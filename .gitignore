@@ -7,7 +7,12 @@ env/
 .env
 bin/
 obj/
-IMPLEMENTATION_SUMMARY.md/
+
+# Internal documentation (already merged into README.md)
+backend/ROUTER_INTEGRATION.md
+backend/TESTING_GUIDE.md
+backend/QUICK_TEST_QUESTIONS.md
+backend/ROUTING_FLOWCHART.md
 
 # Build artifacts
 dist/
