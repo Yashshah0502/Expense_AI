@@ -9,8 +9,15 @@ from rag.answer_gen import generate_answer
 from app.policy.router_v1 import route_question
 from app.schemas.router import AnswerResponse, Route
 
+# Import new routers for Step 3.2 and Step 4
+from app.routes import sql_debug, copilot
+
 load_dotenv()
 app = FastAPI()
+
+# Include new routers
+app.include_router(sql_debug.router, tags=["debug"])
+app.include_router(copilot.router, prefix="/copilot", tags=["copilot"])
 
 DB_URL = os.getenv("DATABASE_URL")
 

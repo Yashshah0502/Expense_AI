@@ -13,3 +13,8 @@ pandas>=2.0.0
 openpyxl>=3.1.0
 pm4py>=2.7.0
 pytest>=7.4.0
+
+# Step 3.2 & 4 dependencies (LangGraph agent)
+langgraph>=0.0.20
+langchain-openai>=0.0.5
+langchain-core>=0.1.0
