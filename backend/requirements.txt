@@ -5,6 +5,11 @@ psycopg[binary]
 langchain-community
 langchain-text-splitters
 sentence-transformers
-
 FlagEmbedding
 torch
+
+# Step 3.1 dependencies
+pandas>=2.0.0
+openpyxl>=3.1.0
+pm4py>=2.7.0
+pytest>=7.4.0

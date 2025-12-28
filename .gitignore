@@ -9,10 +9,12 @@ bin/
 obj/
 
 # Internal documentation (already merged into README.md)
-backend/ROUTER_INTEGRATION.md
-backend/TESTING_GUIDE.md
-backend/QUICK_TEST_QUESTIONS.md
-backend/ROUTING_FLOWCHART.md
+docs/ROUTER_INTEGRATION.md
+docs/TESTING_GUIDE.md
+docs/QUICK_TEST_QUESTIONS.md
+docs/ROUTING_FLOWCHART.md
+docs/ARCHITECTURE_OVERVIEW.md
+docs/STEP_3.1_IMPLEMENTATION.md
 
 # Build artifacts
 dist/

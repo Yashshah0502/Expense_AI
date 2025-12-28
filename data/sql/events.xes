@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<log xes.version="1849.2016" xes.features="nested-attributes" openxes.version="1.0RC7">
+  <extension name="Concept" prefix="concept" uri="http://www.xes-standard.org/concept.xesext"/>
+  <extension name="Time" prefix="time" uri="http://www.xes-standard.org/time.xesext"/>
+  <extension name="Organizational" prefix="org" uri="http://www.xes-standard.org/org.xesext"/>
+  
+  <trace>
+    <string key="concept:name" value="CASE001"/>
+    
+    <event>
+      <string key="concept:name" value="Submit Expense Report"/>
+      <date key="time:timestamp" value="2024-01-15T09:00:00.000+00:00"/>
+      <string key="org:resource" value="Alice"/>
+      <float key="amount" value="1234.50"/>
+      <string key="employee_id" value="EMP001"/>
+    </event>
+    
+    <event>
+      <string key="concept:name" value="Manager Review"/>
+      <date key="time:timestamp" value="2024-01-15T14:30:00.000+00:00"/>
+      <string key="org:resource" value="Bob"/>
+      <string key="decision" value="approved"/>
+    </event>
+    
+    <event>
+      <string key="concept:name" value="Finance Approval"/>
+      <date key="time:timestamp" value="2024-01-16T10:15:00.000+00:00"/>
+      <string key="org:resource" value="Carol"/>
+    </event>
+    
+    <event>
+      <string key="concept:name" value="Payment Processed"/>
+      <date key="time:timestamp" value="2024-01-18T16:00:00.000+00:00"/>
+      <string key="org:resource" value="System"/>
+      <float key="amount" value="1234.50"/>
+    </event>
+  </trace>
+  
+  <trace>
+    <string key="concept:name" value="CASE002"/>
+    
+    <event>
+      <string key="concept:name" value="Submit Expense Report"/>
+      <date key="time:timestamp" value="2024-01-16T10:30:00.000+00:00"/>
+      <string key="org:resource" value="David"/>
+      <float key="amount" value="542.00"/>
+      <string key="employee_id" value="EMP004"/>
+    </event>
+    
+    <event>
+      <string key="concept:name" value="Manager Review"/>
+      <date key="time:timestamp" value="2024-01-16T15:00:00.000+00:00"/>
+      <string key="org:resource" value="Bob"/>
+      <string key="decision" value="rejected"/>
+      <string key="reason" value="Missing receipts"/>
+    </event>
+    
+    <event>
+      <string key="concept:name" value="Resubmit with Receipts"/>
+      <date key="time:timestamp" value="2024-01-17T09:00:00.000+00:00"/>
+      <string key="org:resource" value="David"/>
+    </event>
+    
+    <event>
+      <string key="concept:name" value="Manager Review"/>
+      <date key="time:timestamp" value="2024-01-17T11:00:00.000+00:00"/>
+      <string key="org:resource" value="Bob"/>
+      <string key="decision" value="approved"/>
+    </event>
+    
+    <event>
+      <string key="concept:name" value="Finance Approval"/>
+      <date key="time:timestamp" value="2024-01-18T09:00:00.000+00:00"/>
+      <string key="org:resource" value="Carol"/>
+    </event>
+    
+    <event>
+      <string key="concept:name" value="Payment Processed"/>
+      <date key="time:timestamp" value="2024-01-19T14:00:00.000+00:00"/>
+      <string key="org:resource" value="System"/>
+      <float key="amount" value="542.00"/>
+    </event>
+  </trace>
+</log>
