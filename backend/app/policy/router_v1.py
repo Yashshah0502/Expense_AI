@@ -32,6 +32,13 @@ SINGLE_POLICY_EXPECTATION_TRIGGERS = [
     "is it allowed", "is it reimbursable", "can i", "can we", "allowed", "reimbursable", "proof of payment",
 ]
 
+# Multi-org comparison keywords that should trigger RAG_ALL instead of CLARIFY
+MULTI_ORG_COMPARISON_KEYWORDS = [
+    "which university", "which universities", "across universities", "in which university",
+    "compare", "comparison", "vs", "versus", "difference", "differ",
+    "all universities", "each university", "between universities",
+]
+
 def _norm(s: str) -> str:
     return re.sub(r"\s+", " ", s.strip().lower())
 
@@ -70,10 +77,15 @@ def has_sql_intent(question: str) -> bool:
     q = _norm(question)
     return any(k in q for k in SQL_INTENT_KEYWORDS)
 
+def is_multi_org_query(question: str) -> bool:
+    """Check if question asks about multiple orgs or comparisons."""
+    q = _norm(question)
+    return any(kw in q for kw in MULTI_ORG_COMPARISON_KEYWORDS)
+
 def expects_single_policy_answer(question: str) -> bool:
     q = _norm(question)
-    # if user asks to compare, don't clarify—return RAG_ALL grouped
-    if " vs " in q or "compare" in q or "difference" in q:
+    # if user asks to compare or query multiple orgs, don't clarify—return RAG_ALL grouped
+    if is_multi_org_query(q):
         return False
     return any(t in q for t in SINGLE_POLICY_EXPECTATION_TRIGGERS)
 
@@ -105,12 +117,14 @@ def route_question(
         doc_name=doc_name,
     )
 
-    # Multiple orgs mentioned => RAG_ALL (answer grouped by org)
-    if len(inferred_orgs) >= 2 and not org:
+    # Multiple orgs mentioned or multi-org comparison query => MULTI_ORG_POLICY
+    if (len(inferred_orgs) >= 2 or is_multi_org_query(q)) and not org:
+        # Use all detected orgs, or all orgs if it's a comparison question with no specific orgs
+        target_orgs = inferred_orgs if inferred_orgs else list(ORG_ALIASES.keys())
         return RouterDecision(
-            route=Route.RAG_ALL,
-            filters=PolicyFilters(org=None, policy_type=filters.policy_type, doc_name=doc_name),
-            reason=f"Multiple orgs detected {inferred_orgs}; return cross-org answer.",
+            route=Route.MULTI_ORG_POLICY,
+            filters=PolicyFilters(org=None, orgs=target_orgs, policy_type=filters.policy_type, doc_name=doc_name),
+            reason=f"Multi-org query detected; orgs={target_orgs}; perform per-org retrieval.",
         )
 
     # If we have org => filtered

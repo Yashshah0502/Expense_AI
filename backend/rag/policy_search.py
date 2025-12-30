@@ -9,26 +9,33 @@ CANDIDATE_K = 30
 def build_filter_clauses(filters: dict):
     """
     Build SQL WHERE clauses and parameters for filtering.
-    
+
     Args:
-        filters: Dictionary with optional keys: org, policy_type, doc_name
-        
+        filters: Dictionary with optional keys: org, orgs, policy_type, doc_name
+
     Returns:
         Tuple of (SQL clause string, parameters dict)
     """
     clauses = []
     params = {}
-    
+
+    # Handle single org or multiple orgs (mutually exclusive)
     if filters.get("org"):
         clauses.append("org = %(org)s")
         params["org"] = filters["org"]
+    elif filters.get("orgs"):
+        # Use PostgreSQL's ANY operator for list filtering
+        # psycopg3 automatically adapts Python lists to PostgreSQL arrays
+        clauses.append("org = ANY(%(orgs)s)")
+        params["orgs"] = filters["orgs"]
+
     if filters.get("policy_type"):
         clauses.append("policy_type = %(policy_type)s")
         params["policy_type"] = filters["policy_type"]
     if filters.get("doc_name"):
         clauses.append("doc_name = %(doc_name)s")
         params["doc_name"] = filters["doc_name"]
-    
+
     if not clauses:
         return "", params
     return " AND " + " AND ".join(clauses), params

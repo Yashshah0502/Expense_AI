@@ -71,7 +71,7 @@ def policy_tool(
         debug=False,
     )
 
-    if not search_results.get("chunks"):
+    if not search_results.get("results"):
         return {
             "answer_hint": f"No policy documents found for {org or 'any organization'}.",
             "sources": []
@@ -80,7 +80,7 @@ def policy_tool(
     # Rerank results
     reranked = rerank_documents(
         query=question,
-        documents=search_results["chunks"],
+        documents=search_results["results"],
         top_k=5
     )
 

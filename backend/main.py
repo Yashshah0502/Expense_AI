@@ -42,6 +42,7 @@ def db_health():
 def policy_search(
     q: str = Query(..., min_length=2, description="Search query"),
     org: Optional[str] = Query(None, description="Filter by org/university (e.g., ASU, PRINCETON)"),
+    orgs: Optional[str] = Query(None, description="Filter by multiple orgs (comma-separated, e.g., 'ASU,Stanford')"),
     policy_type: Optional[str] = Query(None, description="Filter by type (travel/procurement/general)"),
     doc_name: Optional[str] = Query(None, description="Filter to specific PDF filename"),
     candidate_k: int = Query(30, description="Number of candidates to retrieve"),
@@ -51,16 +52,21 @@ def policy_search(
     """
     Search policy documents with optional filters.
     Returns ranked chunks with metadata.
+    Supports multi-org filtering via 'orgs' parameter.
     """
     try:
         filters = {}
         if org:
             filters["org"] = org.upper()
+        elif orgs:
+            # Parse comma-separated orgs
+            orgs_list = [o.strip().upper() for o in orgs.split(",") if o.strip()]
+            filters["orgs"] = orgs_list
         if policy_type:
             filters["policy_type"] = policy_type.lower()
         if doc_name:
             filters["doc_name"] = doc_name
-            
+
         return hybrid_search(
             q=q,
             top_k=final_k,
@@ -107,11 +113,13 @@ def policy_answer(
             clarify_question=decision.clarify_question,
         )
 
-    # RAG routes (RAG_FILTERED or RAG_ALL) -> call existing answer pipeline
+    # RAG routes (RAG_FILTERED, RAG_ALL, or MULTI_ORG_POLICY) -> call existing answer pipeline
     # Convert PolicyFilters to dict for generate_answer
     filters_dict = {}
     if decision.filters.org:
         filters_dict["org"] = decision.filters.org.upper()
+    elif decision.filters.orgs:
+        filters_dict["orgs"] = [o.upper() for o in decision.filters.orgs]
     if decision.filters.policy_type:
         filters_dict["policy_type"] = decision.filters.policy_type.lower()
     if decision.filters.doc_name:
@@ -122,7 +130,8 @@ def policy_answer(
         filters=filters_dict,
         candidate_k=candidate_k,
         final_k=final_k,
-        group_by_org=(decision.route == Route.RAG_ALL),
+        group_by_org=(decision.route in [Route.RAG_ALL, Route.MULTI_ORG_POLICY]),
+        per_org_retrieval=(decision.route == Route.MULTI_ORG_POLICY),
     )
 
     # Handle no results case

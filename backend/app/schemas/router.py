@@ -6,12 +6,14 @@ from pydantic import BaseModel, Field, ConfigDict
 class Route(str, Enum):
     RAG_FILTERED = "RAG_FILTERED"      # use filters (org/policy_type/doc_name)
     RAG_ALL = "RAG_ALL"                # no org filter; answer across orgs
+    MULTI_ORG_POLICY = "MULTI_ORG_POLICY"  # multi-org comparison; run per-org retrieval
     CLARIFY = "CLARIFY"                # ask one question (usually missing org)
     SQL_NOT_READY = "SQL_NOT_READY"    # user asked for factual expense data
 
 
 class PolicyFilters(BaseModel):
     org: Optional[str] = None
+    orgs: Optional[List[str]] = None  # For multi-org queries
     policy_type: Optional[str] = None
     doc_name: Optional[str] = None
 

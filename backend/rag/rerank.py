@@ -1,19 +1,25 @@
 from FlagEmbedding import FlagReranker
+import threading
 
 RERANK_MAX_LENGTH = 1024
 
-# Global singleton for the reranker model
+# Global singleton for the reranker model with thread-safe initialization
 _reranker_model = None
+_reranker_lock = threading.Lock()
+_compute_lock = threading.Lock()  # Separate lock for compute to prevent "Already borrowed" error
 
 def get_reranker_model():
     """Returns the lazy-loaded global reranker model."""
     global _reranker_model
     if _reranker_model is None:
-        # Load the cross-encoder model
-        # use_fp16=True helps with performance if GPU is available, 
-        # but on CPU it mostly ignores it or falls back. 
-        # We'll stick to defaults to be safe on Mac (MPS or CPU).
-        _reranker_model = FlagReranker('BAAI/bge-reranker-v2-m3', use_fp16=False)
+        with _reranker_lock:
+            # Double-check pattern to avoid race condition
+            if _reranker_model is None:
+                # Load the cross-encoder model
+                # use_fp16=True helps with performance if GPU is available,
+                # but on CPU it mostly ignores it or falls back.
+                # We'll stick to defaults to be safe on Mac (MPS or CPU).
+                _reranker_model = FlagReranker('BAAI/bge-reranker-v2-m3', use_fp16=False)
     return _reranker_model
 
 def rerank_documents(query: str, documents: list[dict], top_k: int) -> list[dict]:
@@ -41,9 +47,12 @@ def rerank_documents(query: str, documents: list[dict], top_k: int) -> list[dict
     for doc in documents:
         text_source = doc.get("content") or doc.get("snippet") or ""
         pairs.append([query, text_source])
-    
-    # Compute scores
-    scores = reranker.compute_score(pairs, max_length=RERANK_MAX_LENGTH)
+
+    # Compute scores - use lock to prevent concurrent tokenizer access
+    # The "Already borrowed" error occurs when the Rust-based tokenizer
+    # is accessed from multiple threads simultaneously
+    with _compute_lock:
+        scores = reranker.compute_score(pairs, max_length=RERANK_MAX_LENGTH)
     
     # If only one document, scores might be a float? No, usually list.
     if isinstance(scores, float):
