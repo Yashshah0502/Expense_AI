@@ -11,7 +11,7 @@ from typing import Dict, Optional, Tuple
 import pandas as pd
 import psycopg
 
-from ingest_common import (
+from common import (
     normalize_column_name,
     normalize_string,
     normalize_date,

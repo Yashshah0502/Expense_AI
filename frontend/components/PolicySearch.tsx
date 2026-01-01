@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Search, Loader2, FileText } from 'lucide-react';
 import api from '@/lib/api';
+import PolicySearchGuide from './PolicySearchGuide';
 import type { PolicySearchResult } from '@/types/api';
 import { ORGANIZATIONS } from '@/types/api';
 
@@ -13,6 +14,7 @@ export default function PolicySearch() {
   const [results, setResults] = useState<PolicySearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showGuide, setShowGuide] = useState(true);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,9 +43,19 @@ export default function PolicySearch() {
   return (
     <div className="flex flex-col h-full">
       <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">
-          Policy Search
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+            Policy Search
+          </h2>
+          <button
+            onClick={() => setShowGuide(!showGuide)}
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            {showGuide ? 'Hide' : 'Show'} Guide
+          </button>
+        </div>
+
+        {showGuide && <PolicySearchGuide />}
 
         <form onSubmit={handleSearch} className="space-y-4">
           <div>
@@ -143,9 +155,9 @@ export default function PolicySearch() {
                     </span>
                   )}
                 </div>
-                {result.score && (
+                {result.rerank_score && (
                   <span className="text-xs bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 px-2 py-1 rounded">
-                    Score: {(result.score * 100).toFixed(1)}%
+                    Score: {result.rerank_score.toFixed(2)}
                   </span>
                 )}
               </div>

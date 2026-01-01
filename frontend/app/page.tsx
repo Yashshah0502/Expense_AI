@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { MessageSquare, Search, Database, Menu, X } from 'lucide-react';
-import ChatInterface from '@/components/ChatInterface';
+import ModernChatInterface from '@/components/ModernChatInterface';
 import PolicySearch from '@/components/PolicySearch';
 import DataExplorer from '@/components/DataExplorer';
 
@@ -100,7 +100,7 @@ export default function Home() {
 
       {/* Main content */}
       <main className="flex-1 overflow-hidden">
-        {activeTab === 'chat' && <ChatInterface />}
+        {activeTab === 'chat' && <ModernChatInterface />}
         {activeTab === 'search' && <PolicySearch />}
         {activeTab === 'explorer' && <DataExplorer />}
       </main>

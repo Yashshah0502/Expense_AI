@@ -78,7 +78,10 @@ export interface PolicySearchResult {
   snippet: string;
   page?: number;
   org?: string;
-  score?: number;
+  keyword_score?: number;
+  vector_distance?: number;
+  rerank_score?: number;
+  source?: string;
 }
 
 export interface PolicySearchResponse {

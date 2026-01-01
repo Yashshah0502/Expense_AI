@@ -93,8 +93,8 @@ def policy_answer(
     org: Optional[str] = Query(None, description="Filter by org/university"),
     policy_type: Optional[str] = Query(None, description="Filter by type"),
     doc_name: Optional[str] = Query(None, description="Filter to specific PDF"),
-    candidate_k: int = Query(30, description="Number of candidates to retrieve"),
-    final_k: int = Query(5, description="Number of sources to use for answer"),
+    candidate_k: int = Query(15, description="Number of candidates to retrieve"),
+    final_k: int = Query(2, description="Number of sources to use for answer"),
 ):
     """
     Answer a policy question using retrieval + LLM generation with intelligent routing.

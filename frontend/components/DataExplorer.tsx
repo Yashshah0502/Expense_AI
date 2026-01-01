@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Database, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
+import DataExplorerGuide from './DataExplorerGuide';
 import type { DebugSQLResponse, SQLMode, GroupBy } from '@/types/api';
 import { ORGANIZATIONS } from '@/types/api';
 
@@ -16,6 +17,7 @@ export default function DataExplorer() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<DebugSQLResponse | null>(null);
+  const [showGuide, setShowGuide] = useState(true);
 
   const handleQuery = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,9 +46,19 @@ export default function DataExplorer() {
   return (
     <div className="flex flex-col h-full">
       <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">
-          Data Explorer
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+            Data Explorer
+          </h2>
+          <button
+            onClick={() => setShowGuide(!showGuide)}
+            className="text-sm text-green-600 dark:text-green-400 hover:underline"
+          >
+            {showGuide ? 'Hide' : 'Show'} Guide
+          </button>
+        </div>
+
+        {showGuide && <DataExplorerGuide />}
 
         <form onSubmit={handleQuery} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

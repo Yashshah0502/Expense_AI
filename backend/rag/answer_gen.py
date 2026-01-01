@@ -157,8 +157,8 @@ Answer (with citations where relevant):"""
         response = openai.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=512,
-            temperature=0.3,
+            max_tokens=300,
+            temperature=0.2,
         )
         answer_text = response.choices[0].message.content.strip()
         
