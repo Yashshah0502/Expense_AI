@@ -4,9 +4,13 @@ jspm_packages/
 venv/
 .venv/
 env/
-.env
 bin/
 obj/
+
+# Environment files
+.env
+.env.local
+.env*.local
 
 # Build artifacts
 dist/
@@ -16,6 +20,10 @@ out/
 *.dll
 *.so
 *.dylib
+
+# Next.js
+.next/
+.vercel/
 
 # IDEs and Editors
 .vscode/
@@ -36,11 +44,34 @@ desktop.ini
 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
 
-# Documentation/text files
-*.md
-*.txt
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
 
-# Shell scripts
-*.sh
+# Test coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage/
+
+# Documentation (exclude verbose AI-generated docs)
+docs/
+*GUIDE.md
+*_GUIDE.md
+QUICKSTART.md
+QUICK_START.md
+COMPLETED_DELIVERABLES.md
+IMPLEMENTATION*.md
+DELIVERABLE*.md
+
+# Scripts
+reorganize_project.sh
+
+# Pytest cache
+.pytest_cache/
